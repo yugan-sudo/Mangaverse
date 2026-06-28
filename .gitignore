@@ -1,0 +1,37 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node/Frontend
+node_modules/
+dist/
+build/
+.npm/
+
+# Java/Maven/Backend
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.iml
+*.swp
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Database data
+pgdata/
+data/
+
+# Uploads / user generated content
+uploads/
+comic-backend-fixed/uploads/

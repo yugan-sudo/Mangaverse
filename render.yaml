@@ -1,0 +1,63 @@
+services:
+  # 1. Spring Boot Backend API
+  - type: web
+    name: comic-backend
+    env: docker
+    dockerContext: ./comic-backend-fixed
+    dockerfilePath: ./comic-backend-fixed/Dockerfile
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: comic-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: comic-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: comic-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: comic-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: comic-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: "86400000"
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: APP_COOKIE_SECURE
+        value: "true"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+  # 2. React Frontend (Vite)
+  - type: web
+    name: comic-frontend
+    env: docker
+    dockerContext: ./comic-frontend-new
+    dockerfilePath: ./comic-frontend-new/Dockerfile
+    envVars:
+      # Since we don't know the exact backend URL until Render creates it,
+      # we will define it but you MUST update it in the Render dashboard later.
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: VITE_CLOUDINARY_UPLOAD_PRESET
+        sync: false
+
+databases:
+  # Render Managed PostgreSQL
+  - name: comic-db
+    databaseName: comic_db
+    user: comic_user
+    plan: free # Change this to a paid plan if needed for production
