@@ -1,10 +1,7 @@
 // ─── Cloudinary Upload Utility ────────────────────────────────────────────
-// FIX [HIGH]: Cloud name and upload preset were hardcoded in source, which means
-// they get committed to version control and bundled in the public JS bundle.
-// Now read from Vite env vars. Add to your .env file:
-//   VITE_CLOUDINARY_CLOUD_NAME=***REMOVED***
-//   VITE_CLOUDINARY_UPLOAD_PRESET=***REMOVED***
-// Never commit .env to git — add it to .gitignore.
+// Reads cloud name and upload preset from Vite env vars (never hardcode these).
+// Add to your .env file (see .env.example for the variable names).
+// Never commit .env to git — it is already in .gitignore.
 
 const CLOUD_NAME    = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;

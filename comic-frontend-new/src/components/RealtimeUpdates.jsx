@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 // ─── Real-time update banner ──────────────────────────────────────────────
 // Polls /api/comics/recent every 60s and shows a banner when new chapters arrive
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
 export default function RealtimeUpdates() {
   const [updates, setUpdates] = useState([]);  // list of recent updates
   const [show,    setShow]    = useState(true);
@@ -10,7 +12,7 @@ export default function RealtimeUpdates() {
   useEffect(() => {
     const check = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/comics/recent?size=5', {
+        const res = await fetch(`${API_BASE}/comics/recent?size=5`, {
           headers: { 'Content-Type': 'application/json' }
         });
         if (!res.ok) return;
