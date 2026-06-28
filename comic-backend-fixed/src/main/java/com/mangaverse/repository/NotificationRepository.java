@@ -9,4 +9,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByUserIdOrderByCreatedAtDesc(Long userId);
     long countByUserIdAndReadFalse(Long userId);
     @Transactional void deleteByReferenceId(Long referenceId); // for cascade comic delete
+    @Transactional void deleteByUserId(Long userId);
 }
