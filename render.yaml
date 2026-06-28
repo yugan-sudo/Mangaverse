@@ -46,7 +46,7 @@ services:
     dockerContext: ./comic-frontend-new
     dockerfilePath: ./comic-frontend-new/Dockerfile
     envVars:
-      # Since we don't know the exact backend URL until Render creates it,
+      
       # we will define it but you MUST update it in the Render dashboard later.
       - key: VITE_API_URL
         sync: false
