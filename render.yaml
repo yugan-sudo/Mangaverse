@@ -3,6 +3,7 @@ services:
   - type: web
     name: comic-backend
     env: docker
+    plan: free
     dockerContext: ./comic-backend-fixed
     dockerfilePath: ./comic-backend-fixed/Dockerfile
     envVars:
@@ -43,11 +44,10 @@ services:
   - type: web
     name: comic-frontend
     env: docker
+    plan: free
     dockerContext: ./comic-frontend-new
     dockerfilePath: ./comic-frontend-new/Dockerfile
     envVars:
-      
-      # we will define it but you MUST update it in the Render dashboard later.
       - key: VITE_API_URL
         sync: false
       - key: VITE_CLOUDINARY_CLOUD_NAME
@@ -56,8 +56,8 @@ services:
         sync: false
 
 databases:
-  # Render Managed PostgreSQL
+  # Render Managed PostgreSQL (free tier — expires after 90 days)
   - name: comic-db
     databaseName: comic_db
     user: comic_user
-    plan: free # Change this to a paid plan if needed for production
+    plan: free
