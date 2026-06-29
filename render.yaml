@@ -43,22 +43,11 @@ services:
         value: "https://comic-frontend.onrender.com"
 
   # 2. React Frontend (Vite)
-  - type: web
+  - type: static
     name: comic-frontend
-    env: docker
     plan: free
-    dockerContext: ./comic-frontend-new
-    dockerfilePath: ./comic-frontend-new/Dockerfile
-    # IMPORTANT: Vite bakes env vars at BUILD time, not runtime.
-    # They must be passed as Docker build args so the Dockerfile's
-    # ARG/ENV instructions can inject them before `npm run build`.
-    dockerBuildArgs:
-      - key: VITE_API_URL
-        value: "https://mangaverse-25f5.onrender.com/api"
-      - key: VITE_CLOUDINARY_CLOUD_NAME
-        sync: false
-      - key: VITE_CLOUDINARY_UPLOAD_PRESET
-        sync: false
+    buildCommand: cd comic-frontend-new && npm install && npm run build
+    staticPublishPath: ./comic-frontend-new/dist
     envVars:
       - key: VITE_API_URL
         value: "https://mangaverse-25f5.onrender.com/api"
@@ -66,6 +55,10 @@ services:
         sync: false
       - key: VITE_CLOUDINARY_UPLOAD_PRESET
         sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
 databases:
   # Render Managed PostgreSQL (free tier — expires after 90 days)
