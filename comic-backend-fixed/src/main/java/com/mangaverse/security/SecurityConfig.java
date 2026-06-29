@@ -98,10 +98,14 @@ public class SecurityConfig {
             // After OAuth2 success, the JWT cookie takes over and we are stateless.
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .exceptionHandling(ex -> ex
-                // Return 401 JSON instead of redirecting to OAuth2 login page.
-                // This is the key fix: prevents XHR requests from following a
-                // cross-origin redirect to accounts.google.com (CORS error).
+                // Return 401 JSON for unauthenticated API calls.
                 .authenticationEntryPoint(apiAuthenticationEntryPoint())
+                // Return 403 JSON for insufficient-permissions API calls.
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"message\":\"Access denied. You do not have permission.\"}" );
+                })
             )
             .authorizeHttpRequests(auth -> auth
 
@@ -144,6 +148,11 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
+                // Point Spring to the frontend /login page.
+                // This prevents Spring from auto-registering its own /login
+                // endpoint (which returns 404 with no view resolver in a
+                // pure REST / SPA setup).
+                .loginPage(frontendUrl + "/login")
                 .successHandler(oAuth2SuccessHandler)
             )
             .authenticationProvider(authProvider())

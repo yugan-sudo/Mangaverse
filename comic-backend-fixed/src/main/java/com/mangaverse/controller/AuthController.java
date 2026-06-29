@@ -118,13 +118,13 @@ public class AuthController {
     // ─── Cookie helpers ──────────────────────────────────────────────────
     private void setJwtCookie(HttpServletResponse response, String token) {
         response.setHeader("Set-Cookie",
-            String.format("jwt=%s; Max-Age=%d; Path=/; HttpOnly; %sSameSite=Strict",
+            String.format("jwt=%s; Max-Age=%d; Path=/; HttpOnly; %sSameSite=Lax",
                 token, jwtExpirationMs / 1000, cookieSecure ? "Secure; " : ""));
     }
 
     private void clearJwtCookie(HttpServletResponse response) {
         response.setHeader("Set-Cookie",
-            String.format("jwt=; Max-Age=0; Path=/; HttpOnly; %sSameSite=Strict",
+            String.format("jwt=; Max-Age=0; Path=/; HttpOnly; %sSameSite=Lax",
                 cookieSecure ? "Secure; " : ""));
     }
 
