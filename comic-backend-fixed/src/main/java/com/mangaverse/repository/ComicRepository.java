@@ -14,10 +14,10 @@ public interface ComicRepository extends JpaRepository<Comic, Long> {
     // Used by main browse grid (with genre + tag + status + text filter)
     @Query("""
         SELECT c FROM Comic c
-        WHERE (:q     IS NULL OR LOWER(c.title)  LIKE LOWER(CONCAT('%',:q,'%'))
+        WHERE (:q     = '' OR LOWER(c.title)  LIKE LOWER(CONCAT('%',:q,'%'))
                               OR LOWER(c.author) LIKE LOWER(CONCAT('%',:q,'%')))
-        AND   (:genre IS NULL OR LOWER(c.genre)  LIKE LOWER(CONCAT('%',:genre,'%')))
-        AND   (:tag   IS NULL OR LOWER(c.tags)   LIKE LOWER(CONCAT('%',:tag,'%')))
+        AND   (:genre = '' OR LOWER(c.genre)  LIKE LOWER(CONCAT('%',:genre,'%')))
+        AND   (:tag   = '' OR LOWER(c.tags)   LIKE LOWER(CONCAT('%',:tag,'%')))
         AND   (:statusEnum IS NULL OR c.status = :statusEnum)
     """)
     Page<Comic> searchWithFilter(@Param("q")          String q,

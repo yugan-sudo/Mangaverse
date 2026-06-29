@@ -54,10 +54,10 @@ public class ComicController {
         };
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
-        // Treat empty strings as null (frontend may send "" instead of omitting param)
-        String qClean      = (q      != null && !q.isBlank())      ? q.trim()      : null;
-        String genreClean  = (genre  != null && !genre.isBlank())  ? genre.trim()  : null;
-        String tagClean    = (tag    != null && !tag.isBlank())     ? tag.trim()    : null;
+        // Pass empty strings instead of null to prevent PostgreSQL bytea type inference errors in CONCAT/LOWER
+        String qClean      = (q      != null && !q.isBlank())      ? q.trim()      : "";
+        String genreClean  = (genre  != null && !genre.isBlank())  ? genre.trim()  : "";
+        String tagClean    = (tag    != null && !tag.isBlank())    ? tag.trim()    : "";
         String statusClean = (status != null && !status.isBlank()) ? status.trim() : null;
 
         // Convert status string → enum (null-safe)
@@ -67,7 +67,7 @@ public class ComicController {
             catch (IllegalArgumentException ignored) { /* unknown status value — ignore */ }
         }
 
-        boolean hasFilter = qClean != null || genreClean != null || tagClean != null || statusEnum != null;
+        boolean hasFilter = !qClean.isEmpty() || !genreClean.isEmpty() || !tagClean.isEmpty() || statusEnum != null;
         Page<Comic> result = hasFilter
             ? comicRepo.searchWithFilter(qClean, genreClean, tagClean, statusEnum, pageable)
             : comicRepo.findAll(pageable);
