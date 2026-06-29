@@ -62,7 +62,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.generateToken(user.getUsername());
         
         response.setHeader("Set-Cookie",
-            String.format("jwt=%s; Max-Age=%d; Path=/; HttpOnly; %sSameSite=Strict",
+            String.format("jwt=%s; Max-Age=%d; Path=/; HttpOnly; %sSameSite=Lax",
                 token, jwtExpirationMs / 1000, cookieSecure ? "Secure; " : ""));
 
         getRedirectStrategy().sendRedirect(request, response, frontendUrl + "/");

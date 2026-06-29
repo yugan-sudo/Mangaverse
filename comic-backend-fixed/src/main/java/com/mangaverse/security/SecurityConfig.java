@@ -1,5 +1,6 @@
 package com.mangaverse.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -58,13 +60,30 @@ public class SecurityConfig {
         return p;
     }
 
+    /**
+     * Returns 401 JSON instead of redirecting to OAuth2 / login page.
+     * This prevents the browser's XHR from following a cross-origin 302
+     * redirect to accounts.google.com, which would be blocked by CORS.
+     * The OAuth2 flow is only triggered by explicit browser navigation to
+     * /oauth2/authorization/google, not by Ajax API calls.
+     */
+    @Bean
+    public AuthenticationEntryPoint apiAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"message\":\"Unauthorized. Please login to continue.\"}");
+        };
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of(frontendUrl));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
+        cfg.setExposedHeaders(List.of("Set-Cookie"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
@@ -75,8 +94,19 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // We need a minimal session for the OAuth2 code-exchange flow only.
+            // After OAuth2 success, the JWT cookie takes over and we are stateless.
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .exceptionHandling(ex -> ex
+                // Return 401 JSON instead of redirecting to OAuth2 login page.
+                // This is the key fix: prevents XHR requests from following a
+                // cross-origin redirect to accounts.google.com (CORS error).
+                .authenticationEntryPoint(apiAuthenticationEntryPoint())
+            )
             .authorizeHttpRequests(auth -> auth
+
+                // ─── OAuth2 endpoints (must be public for the redirect flow) ─
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
 
                 // ─── Auth ────────────────────────────────────────────────
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
@@ -104,10 +134,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/comments/reports/**").hasRole("ADMIN")
 
                 // ─── Calendar schedule (admin PUT) ───────────────────────
-                // Must be declared before the public GET /api/calendar rule
-                // above, and before the catch-all anyRequest() below.
-                // The @PreAuthorize on CalendarController.scheduleChapter()
-                // is a second layer of defence.
                 .requestMatchers(HttpMethod.PUT, "/api/calendar/admin/**").hasRole("ADMIN")
 
                 // ─── Admin ───────────────────────────────────────────────
